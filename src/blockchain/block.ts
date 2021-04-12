@@ -1,4 +1,4 @@
-import SHA256 from 'crypto-js/sha256'
+import { ChainUtil } from '../chain-util'
 
 export class Block {
     timestamp: number
@@ -31,16 +31,12 @@ export class Block {
         return new Block(0, "----", "genesis-hash", [])
     }
 
-    static hash = (timestamp: number, lastHash: string, data: any): string => {
-        return SHA256(`${timestamp}${lastHash}${data}`).toString()
-    }
-
     static createBlock = (lastBlock: Block, data: any): Block => {
         let hash
         let timestamp = Date.now()
         const lastHash = lastBlock.hash
 
-        hash = Block.hash(timestamp, lastHash, data)
+        hash = ChainUtil.hash(`${timestamp}${lastHash}${data}`)
 
         return new Block(timestamp, lastHash, hash, data)
     }
@@ -48,6 +44,6 @@ export class Block {
     static blockHash = (block: Block): string => {
         const { timestamp, lastHash, data } = block
 
-        return Block.hash(timestamp, lastHash, data)
+        return ChainUtil.hash(`${timestamp}${lastHash}${data}`)
     }
 }
