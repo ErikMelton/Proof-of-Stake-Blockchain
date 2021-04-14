@@ -1,17 +1,31 @@
 import 'ws'
 import WebSocket from 'ws'
 import { Blockchain } from './blockchain/blockchain'
+import { Transaction } from './wallet/transaction'
+import { TransactionPool } from './wallet/transaction-pool'
+
+interface MessageType {
+    chain: string,
+    transaction: string
+}
 
 const P2P_PORT: number = parseInt(process.env.P2P_PORT || '') || 5001
-const peers = process.env.PEERS ? process.env.PEERS.split(',') : ['ws://localhost:5002']
+const peers: string[] = process.env.PEERS ? process.env.PEERS.split(',') : [] // 'ws://localhost:5002'
+
+const MESSAGE_TYPE: MessageType = {
+    chain: "CHAIN",
+    transaction: "TRANSACTION",
+}
 
 export class P2PServer {
     blockchain: Blockchain
     sockets: WebSocket[]
+    transactionPool: TransactionPool
 
-    constructor(blockchain: Blockchain) {
+    constructor(blockchain: Blockchain, transactionPool: TransactionPool) {
         this.blockchain = blockchain
         this.sockets = []
+        this.transactionPool = transactionPool
     }
 
     listen = (): void => {
@@ -44,19 +58,46 @@ export class P2PServer {
     messageHandler = (socket: WebSocket): void => {
         socket.on('message', (message: WebSocket.Data) => {
             const data = JSON.parse(message.toString())
-            console.log('data: ', data)
+            console.log('Received data from peer: ', data)
 
-            this.blockchain.replaceChain(data.chain)
+            switch (data.type) {
+                case MESSAGE_TYPE.chain:
+                    this.blockchain.replaceChain(data.chain)
+                    break
+                
+                case MESSAGE_TYPE.transaction:
+                    if (!this.transactionPool.transactionExists(data.transaction)) {
+                        this.transactionPool.addTransaction(data.transaction)
+                        this.broadcastTransaction(data.transaction)
+                    }
+                    break
+            }
         })
     }
 
     sendChain = (socket: WebSocket): void => {
-        socket.send(JSON.stringify(this.blockchain.chain))
+        socket.send(JSON.stringify({
+            type: MESSAGE_TYPE.chain,
+            chain: this.blockchain.chain
+        }))
     }
 
     syncChain = (): void => {
         this.sockets.forEach((socket: WebSocket) => {
             this.sendChain(socket)
         })
+    }
+
+    broadcastTransaction = (transaction: Transaction): void => {
+        this.sockets.forEach(socket => {
+            this.sendTransaction(socket, transaction)
+        })
+    }
+
+    sendTransaction = (socket: WebSocket, transaction: Transaction): void => {
+        socket.send(JSON.stringify({
+            type: MESSAGE_TYPE.transaction,
+            transaction: transaction
+        }))
     }
 }

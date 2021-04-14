@@ -40,6 +40,8 @@ app.post('/transact', (req, res) => {
     const { to, amount, type } = req.body
     const transaction = wallet.createTransaction(to, amount, type, blockchain, transactionPool)
 
+    if (transaction) p2pserver.broadcastTransaction(transaction)
+
     res.redirect("/transactions")
 })
 
@@ -47,6 +49,6 @@ app.listen(HTTP_PORT, () => {
     console.log(`Listening on port ${HTTP_PORT}`)
 })
 
-const p2pserver = new P2PServer(blockchain)
+const p2pserver = new P2PServer(blockchain, transactionPool)
 
-// p2pserver.listen()
+p2pserver.listen()

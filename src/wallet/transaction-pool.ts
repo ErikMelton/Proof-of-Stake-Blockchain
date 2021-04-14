@@ -20,4 +20,10 @@ export class TransactionPool {
             return transaction
         })
     }
+
+    transactionExists = (transaction: Transaction): Transaction|undefined => {
+        const exists = this.transactions.find((t: Transaction) => t.id === transaction.id)
+
+        return exists
+    }
 }
