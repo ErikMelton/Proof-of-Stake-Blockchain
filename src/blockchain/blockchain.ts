@@ -1,10 +1,13 @@
+import { Account } from './account'
 import { Block } from './block'
 
 export class Blockchain {
     chain: Block[]
+    accounts: Account
 
     constructor() {
         this.chain = [Block.genesis()]
+        this.accounts = new Account()
     }
 
     addBlock = (data: any): Block => {
@@ -39,4 +42,6 @@ export class Blockchain {
         console.log('Replacing the current chain with the new chain')
         this.chain = newChain
     }
+
+    getBalance = (publicKey: string): number => this.accounts.getBalance(publicKey)
 }

@@ -24,6 +24,14 @@ export class Wallet {
         this.keyPair.sign(dataHash).toHex()
     
     createTransaction = (to: string, amount: number, type: string, blockchain: Blockchain, transactionPool: TransactionPool): Transaction|undefined => {
+        this.balance = this.getBalance(blockchain)
+
+        if (amount > this.balance) {
+            console.log(`Amount: ${amount} exceeds the current balance: ${this.balance}`)
+            
+            return
+        }
+
         let transaction = Transaction.newTransaction(this, to, amount, type)
         
         if (transaction) {
@@ -36,4 +44,8 @@ export class Wallet {
         
         return
     }
+
+    getBalance = (blockchain: Blockchain): number => blockchain.getBalance(this.publicKey)
+
+    getPublicKey = (): string => this.publicKey
 }
