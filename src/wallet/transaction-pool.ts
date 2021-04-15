@@ -1,3 +1,4 @@
+import { TRANSACTION_THRESHOLD } from "../config";
 import { Transaction } from "./transaction";
 
 export class TransactionPool {
@@ -7,8 +8,11 @@ export class TransactionPool {
         this.transactions = []
     }
 
-    addTransaction = (transaction: Transaction): void => {
+    addTransaction = (transaction: Transaction): boolean => {
         this.transactions.push(transaction)
+
+        if (this.transactions.length >= TRANSACTION_THRESHOLD) return true
+        else return false
     }
 
     validTransactions = () => {
@@ -25,5 +29,9 @@ export class TransactionPool {
         const exists = this.transactions.find((t: Transaction) => t.id === transaction.id)
 
         return exists
+    }
+
+    clear = (): void => {
+        this.transactions = []
     }
 }
