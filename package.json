@@ -28,6 +28,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./bin/app.js",
-    "dev": "nodemon ./src/app.ts"
+    "dev": "nodemon ./src/app.ts",
+    "ico": "nodemon ./src/ico/index.ts"
   }
 }

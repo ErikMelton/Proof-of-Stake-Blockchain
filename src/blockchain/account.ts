@@ -1,4 +1,5 @@
 import { Transaction } from "../wallet/transaction"
+import { Block } from "./block"
 
 export class Account {
     addresses: string[]
@@ -43,5 +44,15 @@ export class Account {
         const to = transaction.output?.to
 
         if (amount && from && to) this.transfer(from, to, amount)
+    }
+
+    transferFee = (block: Block, transaction: Transaction): void => {
+        const amount = transaction.output?.fee
+        const from = transaction.input?.from
+        const to = block.validator
+
+        if (amount && from && to) {
+            this.transfer(from, to, amount)
+        }
     }
 }
